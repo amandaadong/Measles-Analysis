@@ -258,7 +258,7 @@ yearly_totals  <- cases_year |>
 `{r} str_c(format(lowest_year$total, scientific = FALSE), "cases", sep = " ")`
 :::
 
-::: {.valuebox icon="percent" color="warning"}
+::: {.valuebox icon="percent" color="primary"}
 **Largest year-over-year % change**
 
 `{r} str_c(max_pct_change, "%")`
