@@ -1,0 +1,87 @@
+---
+title: "checkpoint 2"
+format: html
+---
+
+```{r}
+#| label: packages-setup
+#| message: false
+#| warning: false
+library(httr)
+library(tidyjson)
+library(jsonlite)
+library(tidyverse)
+library(stringr)
+library(gt)
+library(paletteer)
+library(gganimate)
+library(gifski)
+cases_month <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-06-24/cases_month.csv')
+cases_year <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-06-24/cases_year.csv')
+```
+
+
+```{r}
+trend_label <- function(current, previous) {
+  pct_change <- (current - previous) / previous * 100
+  case_when(
+    pct_change < -20 ~ "declining",
+    pct_change >  20 ~ "surging",
+    .default = "stable"
+  )
+}
+
+yearly_summary <- cases_year |>
+  group_by(year) |>
+  summarise(
+    total_cases = sum(measles_total, na.rm = TRUE),
+    n_countries = n_distinct(country),
+    .groups = "drop"
+  ) |>
+  arrange(year) |>
+  mutate(
+    prev_total = lag(total_cases),
+    pct_change = round((total_cases - prev_total) / prev_total * 100, 1),
+    trend = trend_label(total_cases, prev_total)
+  ) |>
+  select(year, total_cases, n_countries, pct_change, trend)
+yearly_summary$year <- as.integer(yearly_summary$year)
+```
+## Plot for page 1
+
+```{r}
+#| warning: false
+#| message: false
+ggplot(data = yearly_summary, aes(x = year, y = total_cases / 1000, group = 1)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(breaks = seq(50, 550, by = 100)) +
+  scale_x_continuous(breaks = seq(2012, 2025, by = 2)) +
+  labs(title = "Total Measles Cases by Year (Globally)") +
+  xlab("Year (2012 - 2025)") + ylab("Number of Cases (in Thousands)") +
+  transition_reveal(year) +
+  theme_bw()
+```
+
+## Plot for Madagascar
+```{r}
+madagascar <- cases_year %>% filter(country == "Madagascar")
+```
+
+```{r}
+#| warning: false
+#| message: false
+ggplot(data = madagascar, aes(x = year, y = total_population / 1000000, group = 1)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(breaks = seq(20, 35, by = 5)) +
+  scale_x_continuous(breaks = seq(2012, 2025, by = 2)) +
+  labs(title = "Madagascar's Population by Year") +
+  xlab("Year (2012 - 2025)") +
+  ylab("Population (in Millions)") +
+  transition_reveal(year) +
+  theme_bw()
+  
+```
+
+
