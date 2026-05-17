@@ -45,7 +45,7 @@ library(shiny)
 
 cases_month <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-06-24/cases_month.csv')
 cases_year <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-06-24/cases_year.csv')
-#meta_df <- readr::read_csv("https://raw.githubusercontent.com/zeetahhh/measles-analysis/main/mg%20copy.csv")
+meta_df <- readr::read_csv("https://raw.githubusercontent.com/zeetahhh/measles-analysis/main/mg%20copy.csv")
 
 trend_label <- function(current, previous) {
   pct_change <- (current - previous) / previous * 100
@@ -228,7 +228,7 @@ gt_output("detection_table")
 library(tidyverse)
 library(gt)
 cases_year <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-06-24/cases_year.csv')
-#meta_df <- readr::read_csv("https://raw.githubusercontent.com/zeetahhh/measles-analysis/main/mg%20copy.csv")
+meta_df <- readr::read_csv("https://raw.githubusercontent.com/zeetahhh/measles-analysis/main/mg%20copy.csv")
 cases_filtered <- cases_year %>% filter(!is.na(measles_clinical),
                                      !is.na(measles_total),
                                      !is.na(measles_epi_linked),
@@ -287,3 +287,110 @@ output$detection_table <- render_gt({
 :::
 
 # Madagascar
+
+## Column - Country Context {width="30%"} 
+
+::: {.card title="Why Madagascar?"}
+Madagascar is the most striking outlier in the global measles dataset, its 2018–2019 outbreak represents the largest single-country spike in the entire dataset. In 2012–2017, fewer than 100 cases were recorded per year, but cases surged to over 213,000 in 2018–2019 (a <mark>~1,700% increase</mark>). Following this peak, cases declined dramatically back to fewer than 100.
+A primary driver of this outbreak was chronically low vaccination coverage. Madagascar's measles immunization rates had fallen well below the 95% threshold needed for herd immunity in the years prior, leaving a large susceptible population, particularly among young children in rural areas with limited healthcare access. When the virus was reintroduced, it spread rapidly through these unvaccinated communities. The outbreak ultimately prompted a nationwide emergency vaccination campaign, which is widely credited with the sharp decline seen in subsequent years.
+:::
+
+## Column - Madagascar Visualizations {width="70%"}
+
+### Row - Figure 4- Animated Map {height="50%"}
+::: {.card title="Figure 4: Madagascar Measles Cases Over Time"}
+```{r}
+#| label: mad-plotly
+#| warning: false
+#| message: false
+madagascar <- cases_year %>% filter(country == "Madagascar")
+
+ggplot(data = madagascar, aes(x = year, y = total_population / 1000000, group = 1)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(breaks = seq(20, 35, by = 5)) +
+  scale_x_continuous(breaks = seq(2012, 2025, by = 2)) +
+  labs(title = "Madagascar's Population by Year") +
+  xlab("Year (2012 - 2025)") +
+  ylab("Population (in Millions)") +
+  transition_reveal(year) +
+  theme_bw()
+```
+:::
+
+
+### Row - Interactive Maps {height="50%"}
+
+::: {.panel-tabset}
+
+## All Cities {height="50%"}
+
+::: {.card title="Figure 5: Madagascar City Populations"}
+```{r}
+#| warning: false
+#| message: false
+madagascarLat <- -18.77
+madagascarLon <- 46.85
+madagascar_cities <- meta_df
+
+pal <- colorNumeric(palette = "plasma", domain = madagascar_cities$population)
+
+leaflet() %>%
+  setView(lat = madagascarLat, lng = madagascarLon, zoom = 5) %>%
+  addProviderTiles("Esri.WorldStreetMap") %>%
+  addCircleMarkers(
+    data = madagascar_cities,
+    lat = ~lat,
+    lng = ~lng,
+    radius = 6,
+    fillColor = ~pal(population),
+    fillOpacity = 0.8,
+    color = "white",
+    weight = 1,
+    popup = ~paste0("<b>", city, "</b><br>Population: ", scales::comma(population))
+  ) %>%
+  addLegend(
+    pal = pal,
+    values = madagascar_cities$population,
+    title = "Population",
+    position = "bottomright"
+  )
+```
+:::
+
+
+## Excluding Capital
+
+::: {.card title="Figure 6: Madagascar City Populations (Excluding Antananarivo)"}
+```{r}
+#| warning: false
+#| message: false
+madagascarWithoutAnatananarivo <- madagascar_cities |>
+  filter(city != "Antananarivo")
+
+pal2 <- colorNumeric(palette = "plasma", domain = madagascarWithoutAnatananarivo$population)
+
+leaflet() %>%
+  setView(lat = madagascarLat, lng = madagascarLon, zoom = 5) %>%
+  addProviderTiles("Esri.WorldStreetMap") %>%
+  addCircleMarkers(
+    data = madagascarWithoutAnatananarivo,
+    lat = ~lat,
+    lng = ~lng,
+    radius = 6,
+    fillColor = ~pal2(population),
+    fillOpacity = 0.8,
+    color = "white",
+    weight = 1,
+    popup = ~paste0("<b>", city, "</b><br>Population: ", scales::comma(population))
+  ) %>%
+  addLegend(
+    pal = pal2,
+    values = madagascarWithoutAnatananarivo$population,
+    title = "Population",
+    position = "bottomright"
+  )
+```
+:::
+
+:::
