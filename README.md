@@ -1,6 +1,10 @@
 # Measles Analysis
 An analysis of worldwide measles cases focusing on trends over time in both total measles cases and measles detection methods.
 
+📝 Report: https://amandaadong.github.io/Measles-Analysis/measles_report.html
+
+📊 Dashboard: https://amandadong.shinyapps.io/measles_dash/
+
 ## Overview
 This project investigates global measles cases from a dataset provided for TidyTuesday. The analysis was completed as a course project for 
 STAT 421 - Adv. Statistical Computing with R at Cal Poly SLO. The measles dataset was provided for TidyTuesday, along with the Air Quality API from api-ninjas.com. All work was completed with Aryan, Natalie, and Zita. 
